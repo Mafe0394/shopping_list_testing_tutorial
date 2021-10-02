@@ -35,5 +35,7 @@ object Homework {
      * */
     fun checkBraces(string: String):Boolean{
         return string.count { it=='(' }==string.count { it==')' }
+                && string.indexOf('(')<string.indexOf(')')
+
     }
 }

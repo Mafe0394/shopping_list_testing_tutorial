@@ -60,4 +60,9 @@ class HomeworkTest{
         val result=Homework.checkBraces("((a=b)")
         assertThat(result,`is`(false))
     }
+    @Test
+    fun `Braces with no correct order returns false`(){
+        val result=Homework.checkBraces(")a+b(")
+        assertThat(result,`is`(false))
+    }
 }
