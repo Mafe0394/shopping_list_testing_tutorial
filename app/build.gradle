@@ -45,5 +45,4 @@ dependencies {
 
     // To create readable assertions, we can use the Truth library instead
     testImplementation "org.hamcrest:hamcrest-all:$hamcrestVersion"
-    androidTestImplementation "org.hamcrest:hamcrest-all:$hamcrestVersion"
 }

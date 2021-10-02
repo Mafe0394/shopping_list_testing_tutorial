@@ -1,4 +1,4 @@
-package com.projects.shoppinglisttestingtutorial
+package com.projects.shoppinglisttestingtutorial.justPractice
 
 object Homework {
 

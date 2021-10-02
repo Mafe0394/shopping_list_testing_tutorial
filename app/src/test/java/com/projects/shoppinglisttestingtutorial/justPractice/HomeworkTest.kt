@@ -1,5 +1,6 @@
-package com.projects.shoppinglisttestingtutorial
+package com.projects.shoppinglisttestingtutorial.justPractice
 
+import com.projects.shoppinglisttestingtutorial.justPractice.Homework
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Test
@@ -20,28 +21,28 @@ class HomeworkTest{
      * */
     @Test
     fun `Fibonacci with input 0 returns 0`(){
-        val result=Homework.fib(0)
+        val result= Homework.fib(0)
         assertThat(result, `is`(0))
     }
 
     @Test
     fun `Fibonacci with input 1 returns 1`(){
-        val result=Homework.fib(1)
+        val result= Homework.fib(1)
         assertThat(result, `is`(1))
     }
     @Test
     fun `Fibonacci with input 2 returns 1`(){
-        val result=Homework.fib(2)
+        val result= Homework.fib(2)
         assertThat(result, `is`(1))
     }
     @Test
     fun `Fibonacci with input 5 returns 5`(){
-        val result=Homework.fib(5)
+        val result= Homework.fib(5)
         assertThat(result, `is`(5))
     }
     @Test
     fun `Fibonacci with 7 zero returns 13`(){
-        val result=Homework.fib(7)
+        val result= Homework.fib(7)
         assertThat(result, `is`(13))
     }
 
@@ -52,17 +53,17 @@ class HomeworkTest{
      * */
     @Test
     fun `Braces set correctly returns true`(){
-        val result=Homework.checkBraces("(a=b)")
+        val result= Homework.checkBraces("(a=b)")
         assertThat(result,`is`(true))
     }
     @Test
     fun `Braces set incorrectly returns false`(){
-        val result=Homework.checkBraces("((a=b)")
+        val result= Homework.checkBraces("((a=b)")
         assertThat(result,`is`(false))
     }
     @Test
     fun `Braces with no correct order returns false`(){
-        val result=Homework.checkBraces(")a+b(")
+        val result= Homework.checkBraces(")a+b(")
         assertThat(result,`is`(false))
     }
 }
