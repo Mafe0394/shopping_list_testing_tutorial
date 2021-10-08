@@ -41,11 +41,11 @@ class FakeShoppingRepository : ShoppingRepository {
     }
 
     override fun observeAllShoppingItems(): LiveData<List<ShoppingItem>> {
-        return observeAllShoppingItems()
+        return observableShoppingItem
     }
 
     override fun observeTotalPrice(): LiveData<Float> {
-        return observeTotalPrice()
+        return observableTotalPrice
     }
 
     override suspend fun searchForImage(imageQuery: String): CustomResult<ImageResponse> {
