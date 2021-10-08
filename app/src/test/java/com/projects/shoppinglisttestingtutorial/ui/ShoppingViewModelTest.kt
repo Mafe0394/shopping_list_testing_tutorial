@@ -80,5 +80,16 @@ class ShoppingViewModelTest{
         val value=viewModel.insertShoppingItemStatus.getOrAwaitValueTest()
 
         assertThat(value.getContentIfNotHandled()?.succeeded,`is`(true))
+        assertThat(viewModel.curImageUrl.value, `is`(""))
+    }
+
+    @Test
+    fun `set current image url, returns image url`(){
+        viewModel.setCurImageUrl("imageUrl")
+
+        val imageUrl=viewModel.curImageUrl.getOrAwaitValueTest()
+
+        assertThat(imageUrl,`is`("imageUrl"))
+
     }
 }
