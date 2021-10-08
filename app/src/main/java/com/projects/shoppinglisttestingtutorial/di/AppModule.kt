@@ -2,10 +2,13 @@ package com.projects.shoppinglisttestingtutorial.di
 
 import android.content.Context
 import androidx.room.Room
+import com.projects.shoppinglisttestingtutorial.data.local.ShoppingDao
 import com.projects.shoppinglisttestingtutorial.data.local.ShoppingItemDatabase
 import com.projects.shoppinglisttestingtutorial.data.remote.PixabyAPI
 import com.projects.shoppinglisttestingtutorial.other.Constants.BASE_URL
 import com.projects.shoppinglisttestingtutorial.other.Constants.DATABASE_NAME
+import com.projects.shoppinglisttestingtutorial.repositories.DefaultShoppingRepository
+import com.projects.shoppinglisttestingtutorial.repositories.ShoppingRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,4 +47,11 @@ object AppModule {
             .build()
             .create(PixabyAPI::class.java)
     }
+
+    @Singleton
+    @Provides
+    fun providesDefaultshoppingRepository(
+        dao:ShoppingDao,
+        api:PixabyAPI
+    ):ShoppingRepository=DefaultShoppingRepository(dao,api)
 }
