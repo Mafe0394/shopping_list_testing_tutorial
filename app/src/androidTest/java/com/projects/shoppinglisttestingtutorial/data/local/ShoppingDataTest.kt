@@ -6,6 +6,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.projects.shoppinglisttestingtutorial.getOrAwaitValue
+import com.projects.shoppinglisttestingtutorial.launchFragmentInHiltContainer
+import com.projects.shoppinglisttestingtutorial.ui.ShoppingFragment
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,6 +46,13 @@ class ShoppingDataTest {
     @After
     fun teardown(){
         database.close()
+    }
+
+    @Test
+    fun testLaunchFragmentInHiltContainer(){
+        launchFragmentInHiltContainer<ShoppingFragment> {
+
+        }
     }
 
     @Test
