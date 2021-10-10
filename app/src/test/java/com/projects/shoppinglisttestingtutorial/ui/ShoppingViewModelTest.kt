@@ -4,6 +4,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.projects.shoppinglisttestingtutorial.MainCoroutineRule
 import com.projects.shoppinglisttestingtutorial.getOrAwaitValueTest
 import com.projects.shoppinglisttestingtutorial.other.Constants
+import com.projects.shoppinglisttestingtutorial.other.CustomResult
 import com.projects.shoppinglisttestingtutorial.other.succeeded
 import com.projects.shoppinglisttestingtutorial.repositories.FakeShoppingRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -90,6 +91,20 @@ class ShoppingViewModelTest{
         val imageUrl=viewModel.curImageUrl.getOrAwaitValueTest()
 
         assertThat(imageUrl,`is`("imageUrl"))
+    }
 
+    @Test
+    fun `delete shopping item, returns list without Shopping item`(){
+        viewModel.insertShoppingItem("string","5","3.0")
+
+        val value=viewModel.insertShoppingItemStatus.getOrAwaitValueTest()
+        val shoppingItem=(value.peekContent() as CustomResult.Success).data
+
+        assertThat(value.getContentIfNotHandled()?.succeeded,`is`(true))
+
+        viewModel.deleteShoppingItem(shoppingItem)
+        val listShoppingItems=viewModel.shoppingItems.getOrAwaitValueTest()
+
+        assertThat(listShoppingItems.contains(shoppingItem),`is`(false))
     }
 }
