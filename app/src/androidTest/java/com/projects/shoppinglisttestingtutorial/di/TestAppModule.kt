@@ -3,6 +3,8 @@ package com.projects.shoppinglisttestingtutorial.di
 import android.content.Context
 import androidx.room.Room
 import com.projects.shoppinglisttestingtutorial.data.local.ShoppingItemDatabase
+import com.projects.shoppinglisttestingtutorial.repositories.FakeShoppingRepositoryAndroidTest
+import com.projects.shoppinglisttestingtutorial.repositories.ShoppingRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,4 +23,5 @@ object TestAppModule {
         ShoppingItemDatabase::class.java
     ).allowMainThreadQueries()
         .build()
+
 }
