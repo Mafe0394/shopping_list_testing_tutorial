@@ -1,9 +1,6 @@
 package com.projects.shoppinglisttestingtutorial.data.local
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.projects.shoppinglisttestingtutorial.getOrAwaitValue
 import com.projects.shoppinglisttestingtutorial.launchFragmentInHiltContainer
@@ -11,7 +8,6 @@ import com.projects.shoppinglisttestingtutorial.ui.ShoppingFragment
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
@@ -19,7 +15,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -32,7 +27,7 @@ class ShoppingDataTest {
     val hiltRule=HiltAndroidRule(this)
 
     @get:Rule
-    var instantTaskExecutorRule=InstantTaskExecutorRule()
+    val instantTaskExecutorRule=InstantTaskExecutorRule()
 
     @Inject @Named("test_db") lateinit var database: ShoppingItemDatabase
     private lateinit var  dao:ShoppingDao
