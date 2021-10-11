@@ -1,7 +1,6 @@
 package com.projects.shoppinglisttestingtutorial.ui
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.fragment.app.FragmentFactory
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.test.espresso.Espresso.onView
@@ -11,15 +10,10 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.filters.MediumTest
 import com.projects.shoppinglisttestingtutorial.R
 import com.projects.shoppinglisttestingtutorial.adapters.ImageAdapter
-import com.projects.shoppinglisttestingtutorial.di.AppModule
-import com.projects.shoppinglisttestingtutorial.di.TestAppModule
 import com.projects.shoppinglisttestingtutorial.getOrAwaitValue
 import com.projects.shoppinglisttestingtutorial.launchFragmentInHiltContainer
-import com.projects.shoppinglisttestingtutorial.repositories.FakeShoppingRepositoryAndroidTest
-import dagger.hilt.InstallIn
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.UninstallModules
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
@@ -45,22 +39,24 @@ class ImagePickFragmentTest {
     @Inject
     lateinit var fragmentFactory: ShoppingFragmentFactory
 
+    private lateinit var testViewModel:ShoppingViewModel
+    private lateinit var navController: NavController
+
     @Before
     fun setup() {
         hiltRule.inject()
+        navController = mock(NavController::class.java)
     }
 
     @Test
     fun clickImage_popBackStackAndSetImageUrl() {
-        val navController = mock(NavController::class.java)
         val imageUrl="testUrl"
-        val testViewModel=ShoppingViewModel(FakeShoppingRepositoryAndroidTest())
         launchFragmentInHiltContainer<ImagePickFragment>(
             fragmentFactory = fragmentFactory
         ) {
             Navigation.setViewNavController(requireView(), navController)
             imageAdapter.images= listOf(imageUrl)
-            viewModel=testViewModel
+            testViewModel=viewModel
         }
 
         onView(withId(R.id.rvImages)).perform(
