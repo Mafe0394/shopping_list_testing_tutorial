@@ -1,5 +1,10 @@
 # shopping_list_testing_tutorial
-Testing tutorial using TDD and dependency injection with hilt
+This repository contains a compilation of the lessons in the course by Philip Lacker as a practice to learn about Test Driven Development, here is the playlist and his repository, I encorage you to follow the videos to get more information:
+
+- [Testing on Android](https://www.youtube.com/embed/videoseries?list=PLQkwcJG4YTCSYJ13G4kVIJ10X5zisB2Lq)
+- https://github.com/philipplackner/ShoppingListTestingYT/tree/master
+
+
 ## Testing fragments with hilt
 - First, we added the next dependency to gradle:
 `debugImplementation "androidx.fragment:fragment-testing:1.4.0-alpha10"`
