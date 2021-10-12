@@ -34,6 +34,7 @@ class AddShoppingItemFragmentTest{
     val instantTaskExecutorRule=InstantTaskExecutorRule()
 
     private lateinit var navController: NavController
+    private lateinit var testViewModel:ShoppingViewModel
 
     @Before
     fun setup(){
@@ -69,7 +70,6 @@ class AddShoppingItemFragmentTest{
 
     @Test
     fun pressBackButton_setCurImageUrlToEmptyString(){
-        var testViewModel:ShoppingViewModel?=null
 
         launchFragmentInHiltContainer<AddShoppingItemFragment> {
             Navigation.setViewNavController(requireView(),navController)
@@ -79,7 +79,7 @@ class AddShoppingItemFragmentTest{
 
         pressBack()
 
-        val curImageUrl=testViewModel?.curImageUrl?.getOrAwaitValue()
+        val curImageUrl=testViewModel.curImageUrl.getOrAwaitValue()
 
         assertThat(curImageUrl,`is`(""))
     }
