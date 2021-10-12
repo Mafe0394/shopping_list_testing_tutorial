@@ -98,3 +98,53 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
         }
     }
 ```
+
+
+## Testing navigation with mockito and espresso
+To test the navigation graph we:
+- Create a mock of the NavController Class
+`navController= mock(NavController::class.java)`
+
+- Then we launch our fragment using our custom Hilt launcher (we get a reference of the viewModel if needed)
+```
+launchFragmentInHiltContainer<AddShoppingItemFragment> {
+            Navigation.setViewNavController(requireView(),navController)
+            testViewModel=this.viewModel
+            this.viewModel.setCurImageUrl("imageUrl")
+        }
+```
+- We perform an action (a click, for example)
+  -  Click on a widget
+`onView(withId(R.id.ivShoppingImage)).perform(click())`
+  - BackPressed
+`pressBack()`
+  - Click on RecyclerViewElement
+```
+        onView(withId(R.id.tasks_list))
+            .perform(RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
+                hasDescendant(withText("TITLE1")), click()))
+```
+- Last, we verify we call the right function with the proper parameters
+```
+verify(navController).navigate(
+            AddShoppingItemFragmentDirections.actionAddShoppingItemFragmentToImagePickFragment()
+        )
+```
+
+> IMPORTANT: We need to annotate our test class with `@MediumTest`, `@HiltAndroidTest` and `@ExperimentalCoroutinesApi` and  set the Rules for hilt and to handle Coroutines 
+> ```
+>    @get:Rule
+>    val hiltRule=HiltAndroidRule(this)
+>
+>    @get:Rule
+>    val instantTaskExecutorRule=InstantTaskExecutorRule()
+>
+>   private lateinit var navController: NavController
+>
+>    @Before
+>    fun setup(){
+>        hiltRule.inject()
+>        ...
+>   }
+>```
+
