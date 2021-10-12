@@ -148,3 +148,220 @@ verify(navController).navigate(
 >   }
 >```
 
+## Using espresso to test a click on a recyclerView
+- In this part of the project we set an adapter as follows:
+  - We have a diffCall
+  - We have a onClick object we can set from the fragment
+
+```
+class ImageAdapter @Inject constructor(
+    private val glide: RequestManager
+) : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
+    inner class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    private val diffCallback = object : DiffUtil.ItemCallback<String>() {
+        override fun areItemsTheSame(oldItem: String, newItem: String): Boolean =
+            oldItem == newItem
+
+
+        override fun areContentsTheSame(oldItem: String, newItem: String): Boolean =
+            oldItem == newItem
+    }
+
+    private val differ = AsyncListDiffer(this, diffCallback)
+
+    var images: List<String>
+        get() = differ.currentList
+        set(value) = differ.submitList(value)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder =
+        ImageViewHolder(LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_image,
+            parent,
+            false))
+
+    private var onItemClickListener:((String)->Unit)?=null
+
+    fun setOnItemClickListener(listener:((String)->Unit)){
+        onItemClickListener=listener
+    }
+
+    override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
+        val url=images[position]
+        holder.itemView.apply {
+            glide.load(url).into(ivShoppingImage)
+
+            setOnClickListener{
+                onItemClickListener?.let {click->
+                    click(url)
+                }
+            }
+        }
+    }
+
+    override fun getItemCount(): Int = images.size
+}
+```
+
+- We inject the dependency of Glide in our AppModule, we need glide to show the images on a recyclerView
+
+```
+    @Singleton
+    @Provides
+    fun provideGlideInstance(
+        @ApplicationContext context: Context
+    )= Glide.with(context).setDefaultRequestOptions(
+        RequestOptions()
+            .placeholder(R.drawable.ic_image)
+            .error(R.drawable.ic_image)
+    )
+```
+
+- We inject our new adapter in the Fragment Constructor, for this we need to set a Fragment factory
+
+```
+class ImagePickFragment @Inject constructor(
+    val imageAdapter: ImageAdapter
+):Fragment(R.layout.fragment_image_pick) {
+
+    val viewModel:ShoppingViewModel by activityViewModels()
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupRecyclerView()
+
+        imageAdapter.setOnItemClickListener {
+            findNavController().popBackStack()
+            viewModel.setCurImageUrl(it)
+        }
+    }
+
+    private fun setupRecyclerView(){
+        rvImages.apply {
+            adapter=imageAdapter
+            layoutManager=GridLayoutManager(requireContext(),GRID_SPAN_COUNT)
+        }
+    }
+}
+```
+```
+class ShoppingFragmentFactory @Inject constructor(
+    private val imageAdapter: ImageAdapter
+) : FragmentFactory() {
+
+    override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
+        return when (className) {
+            ImagePickFragment::class.java.name -> ImagePickFragment(imageAdapter)
+            else -> super.instantiate(classLoader, className)
+        }
+
+    }
+}
+```
+- We need to copy our fake repository into our android directory and create the function to initialize the fake repository in our TestAppModule for dependency injection, then we replace `@InstalIn(SingletonComponent::class)` with 
+`@TestInstallIn(
+    components = [SingletonComponent::class],
+    replaces = [AppModule::class]
+)`, our TestAppModule now look like this:
+
+>```
+> @Module
+> @TestInstallIn(
+>     components = [SingletonComponent::class],
+>     replaces = [AppModule::class]
+> )
+> object TestAppModule {
+> 
+>     @Provides
+>     @Named("test_db")
+>     fun provideInMemoryDb(@ApplicationContext context: Context) = Room.inMemoryDatabaseBuilder(
+>         context,
+>         ShoppingItemDatabase::class.java
+>     ).allowMainThreadQueries()
+>         .build()
+> 
+> 
+>     @Provides
+>     fun providesFakeShoppingRepository():ShoppingRepository=
+>         FakeShoppingRepositoryAndroidTest()
+> 
+> 
+>     @Provides
+>     fun provideGlideInstance(
+>         @ApplicationContext context: Context
+>     )= Glide.with(context).setDefaultRequestOptions(
+>         RequestOptions()
+>             .placeholder(R.drawable.ic_image)
+>             .error(R.drawable.ic_image)
+>     )
+> 
+> }
+>```
+
+-  We need to considerate the following when we create our testing class
+  - we set the hiltRule and the instantTaskExecutorRule for asynchronous processes, also we inject a `ShoppingFragmentFactory` variable with `@Inject` 
+  - We need to set a list in the recycler View adapter, so we create a random list with an only element we can check later on.
+  - This time we are using a fragment Factory, when launchFactoryInHiltContainer we set the fragmentFactory parameter with our own ShoppingFragmentFactory.
+  - Inside the fragment we initialize the recycler view list and get a viewModel reference.
+  - We use espresso to simulate a click on a element inside the recycler view.
+```
+onView(withId(R.id.rvImages)).perform(
+            RecyclerViewActions.actionOnItemAtPosition<ImageAdapter.ImageViewHolder>(
+                0,
+                click()
+            )
+        )
+```
+Our Testing class looks like this now:
+
+```
+@HiltAndroidTest
+@MediumTest
+@ExperimentalCoroutinesApi
+class ImagePickFragmentTest {
+
+    @get:Rule
+    val hiltRule = HiltAndroidRule(this)
+
+    @get:Rule
+    val instantTaskExecutorRule=InstantTaskExecutorRule()
+
+    @Inject
+    lateinit var fragmentFactory: ShoppingFragmentFactory
+
+    private lateinit var testViewModel:ShoppingViewModel
+    private lateinit var navController: NavController
+
+    @Before
+    fun setup() {
+        hiltRule.inject()
+        navController = mock(NavController::class.java)
+    }
+
+    @Test
+    fun clickImage_popBackStackAndSetImageUrl() {
+        val imageUrl="testUrl"
+        launchFragmentInHiltContainer<ImagePickFragment>(
+            fragmentFactory = fragmentFactory
+        ) {
+            Navigation.setViewNavController(requireView(), navController)
+            imageAdapter.images= listOf(imageUrl)
+            testViewModel=viewModel
+        }
+
+        onView(withId(R.id.rvImages)).perform(
+            RecyclerViewActions.actionOnItemAtPosition<ImageAdapter.ImageViewHolder>(
+                0,
+                click()
+            )
+        )
+
+        verify(navController).popBackStack()
+
+        val curImageUrl=testViewModel.curImageUrl.getOrAwaitValue()
+
+        assertThat(curImageUrl,`is`(imageUrl))
+    }
+}
+```
