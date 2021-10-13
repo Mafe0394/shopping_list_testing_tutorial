@@ -15,8 +15,10 @@ class ShoppingFragment : Fragment(R.layout.fragment_shopping) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         fabAddShoppingItem.setOnClickListener {
-            findNavController().navigate(ShoppingFragmentDirections
-                .actionShoppingFragmentToAddShoppingItemFragment())
+            findNavController().navigate(
+                ShoppingFragmentDirections
+                    .actionShoppingFragmentToAddShoppingItemFragment()
+            )
         }
     }
 }
