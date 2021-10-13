@@ -370,3 +370,10 @@ class ImagePickFragmentTest {
     }
 }
 ```
+
+## Testing with edit Test
+
+We create our test as we did before, the line to perform actions on a EditText is the following:
+
+`onView(withId(R.id.etShoppingItemAmount)).perform(replaceText("20"))`
+
