@@ -377,3 +377,158 @@ We create our test as we did before, the line to perform actions on a EditText i
 
 `onView(withId(R.id.etShoppingItemAmount)).perform(replaceText("20"))`
 
+## Deleting an item from a recyclerView with a swipe gesture
+- We create a ShoppingItemAdapter as we already know and inject it in our fragment constructor.
+```
+class ShoppingFragment @Inject constructor(
+    val shoppingItemAdapter: ShoppingItemAdapter
+) : Fragment(R.layout.fragment_shopping) {
+...
+```
+
+- An ItemTouchHelper is necessary to detect a swipe gesture. We implement the move method to write the code to execute when the gesture is used
+```
+private val itemTouchCallback = object : ItemTouchHelper.SimpleCallback(
+        0, LEFT or RIGHT
+    ) {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean = true
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val pos = viewHolder.layoutPosition
+            val item = shoppingItemAdapter.listShoppingItem[pos]
+            viewModel.deleteShoppingItem(item)
+            Snackbar.make(
+                requireActivity().rootLayout,
+                "Successfully deleted item",
+                Snackbar.LENGTH_LONG
+            ).apply {
+                setAction("Undo") {
+                    viewModel.insertShoppingItemIntoDb(item)
+                }
+                show()
+            }
+        }
+    }
+```
+- As we need to insert parameters in the ShoppingFragment constructor, we use our ShoppingFragmentFactory to do this:
+```
+class ShoppingFragmentFactory @Inject constructor(
+    ...
+    private val shoppingItemAdapter: ShoppingItemAdapter
+) : FragmentFactory() {
+
+    override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
+        return when (className) {
+            ...
+            ShoppingFragment::class.java.name->ShoppingFragment(shoppingItemAdapter)
+            else -> super.instantiate(classLoader, className)
+        }
+
+    }
+}
+```
+- We attach the ItemTouchHelper to the recyclerView
+```
+private fun setupRecyclerView() {
+        rvShoppingItems.apply {
+            adapter = shoppingItemAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+            ItemTouchHelper(itemTouchCallback).attachToRecyclerView(this)
+        }
+    }
+```
+
+- Our ShoppingFragment Class now looks like this
+```
+class ShoppingFragment @Inject constructor(
+    val shoppingItemAdapter: ShoppingItemAdapter
+) : Fragment(R.layout.fragment_shopping) {
+
+    val viewModel: ShoppingViewModel by activityViewModels()
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        subscribeToObservers()
+        setupRecyclerView()
+
+        fabAddShoppingItem.setOnClickListener {
+            findNavController().navigate(
+                ShoppingFragmentDirections
+                    .actionShoppingFragmentToAddShoppingItemFragment()
+            )
+        }
+    }
+
+    private val itemTouchCallback = object : ItemTouchHelper.SimpleCallback(
+        0, LEFT or RIGHT
+    ) {
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean = true
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val pos = viewHolder.layoutPosition
+            val item = shoppingItemAdapter.listShoppingItem[pos]
+            viewModel.deleteShoppingItem(item)
+            Snackbar.make(
+                requireActivity().rootLayout,
+                "Successfully deleted item",
+                Snackbar.LENGTH_LONG
+            ).apply {
+                setAction("Undo") {
+                    viewModel.insertShoppingItemIntoDb(item)
+                }
+                show()
+            }
+        }
+    }
+
+    private fun subscribeToObservers() {
+        viewModel.shoppingItems.observe(viewLifecycleOwner, {
+            shoppingItemAdapter.listShoppingItem = it
+        })
+        viewModel.totalPrice.observe(viewLifecycleOwner, {
+            val price = it ?: 0f
+            val priceText = "Total Price $price€"
+            tvShoppingItemPrice.text = priceText
+        })
+    }
+
+    private fun setupRecyclerView() {
+        rvShoppingItems.apply {
+            adapter = shoppingItemAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+            ItemTouchHelper(itemTouchCallback).attachToRecyclerView(this)
+        }
+    }
+
+}
+```
+- For testing we need to fill recyclerView with a test list and save the list into the test database with a fake repository; using espresso we perform the swipe gesture and we check that the item was deleted after the action.
+```
+@Test
+    fun swipeShoppingItem_deleteItemInDb(){
+        val shoppingItem=ShoppingItem("Name",1,1f,"url",1)
+        var testViewModel:ShoppingViewModel?=null
+        launchFragmentInHiltContainer<ShoppingFragment>(fragmentFactory = fragmentFactory) {
+            testViewModel=viewModel
+            viewModel.insertShoppingItemIntoDb(shoppingItem)
+        }
+
+        onView(withId(R.id.rvShoppingItems)).perform(
+            RecyclerViewActions.actionOnItemAtPosition<ShoppingItemAdapter.ShoppingItemViewHolder>(
+                0,
+                swipeLeft()
+            )
+        )
+
+        assertThat(testViewModel?.shoppingItems?.getOrAwaitValue()?.isEmpty(),`is`(true))
+    }
+```
