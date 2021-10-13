@@ -5,7 +5,6 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.RequestManager
 import com.google.android.material.snackbar.Snackbar
@@ -49,7 +48,7 @@ class AddShoppingItemFragment @Inject constructor(
     }
 
     private fun subscribeToObservers() {
-        viewModel.curImageUrl.observe(viewLifecycleOwner, Observer {
+        viewModel.curImageUrl.observe(viewLifecycleOwner, {
             glide.load(it).into(ivShoppingImage)
         })
         viewModel.insertShoppingItemStatus.observe(viewLifecycleOwner, {
